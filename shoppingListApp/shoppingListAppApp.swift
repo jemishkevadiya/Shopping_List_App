@@ -10,11 +10,21 @@ import SwiftUI
 @main
 struct shoppingListAppApp: App {
     let persistenceController = PersistenceController.shared
-
+    @State private var showSplash = true
+    
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .environment(\.managedObjectContext, persistenceController.container.viewContext)
+            if showSplash {
+                SplashScreenView()
+                    .onAppear {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                             showSplash = false
+                        }
+                    }
+            } else {
+             CategoryListView()
+                .environment(\.managedObjectContext, persistenceController.container.viewContext)
+            }
         }
     }
 }
