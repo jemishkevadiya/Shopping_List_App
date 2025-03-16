@@ -16,14 +16,14 @@ struct shoppingListAppApp: App {
         WindowGroup {
             if showSplash {
                 SplashScreenView()
-                    .onAppear {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                             showSplash = false
+                    .onAppear {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                            showSplash = false
                         }
                     }
             } else {
-             CategoryListView()
-                .environment(\.managedObjectContext, persistenceController.container.viewContext)
+                CategoryListView()
+                    .environment(\.managedObjectContext, persistenceController.container.viewContext)
             }
         }
     }
