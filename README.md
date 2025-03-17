@@ -1,4 +1,4 @@
-#Shopping List App
+Shopping List App
 
 Overview
 - The Shopping List App is a simple iOS application built with SwiftUI and Core Data, designed to help users manage shopping lists. Users can create categories (e.g., Groceries, Electronics) with custom tax rates, add items to each category,    and generate an invoice (tax receipt) summarizing their purchases with tax calculations. The app features a clean, user-friendly interface with a splash screen, category list, item list, and invoice view.
