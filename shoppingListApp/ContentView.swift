@@ -17,6 +17,7 @@ struct ContentView: View {
     @State private var showAddItem = false
     @State private var newItemName = ""
     @State private var newItemPrice = ""
+    @State private var showDuplicateAlert = false 
     
     init(category: Category) {
         self.category = category
@@ -96,10 +97,15 @@ struct ContentView: View {
                     .keyboardType(.decimalPad)
                 Button("Add") {
                     if let price = Double(newItemPrice), !newItemName.isEmpty {
-                        addItem(name: newItemName, price: price)
-                        newItemName = ""
-                        newItemPrice = ""
-                        showAddItem = false
+                        let trimmedName = newItemName.trimmingCharacters(in: .whitespaces)
+                        if items.contains(where: { $0.name?.lowercased() == trimmedName.lowercased() }) {
+                            showDuplicateAlert = true
+                        } else {
+                            addItem(name: trimmedName, price: price)
+                            newItemName = ""
+                            newItemPrice = ""
+                            showAddItem = false
+                        }
                     }
                 }
                 .padding()
@@ -108,6 +114,16 @@ struct ContentView: View {
                 .cornerRadius(10)
             }
             .padding()
+            .alert(isPresented: $showDuplicateAlert) {
+                Alert(
+                    title: Text("Duplicate Item"),
+                    message: Text("An item with the name '\(newItemName)' already exists in this category."),
+                    dismissButton: .default(Text("OK")) {
+                        newItemName = ""
+                        newItemPrice = ""
+                    }
+                )
+            }
         }
     }
     
