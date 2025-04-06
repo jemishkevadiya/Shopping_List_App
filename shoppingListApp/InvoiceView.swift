@@ -12,40 +12,44 @@ struct InvoiceView: View {
     let categories: [Category]
     @Environment(\.dismiss) private var dismiss
     
-    let oliveGreen = Color(red: 85/255, green: 107/255, blue: 85/255)
-    let offWhite = Color(red: 245/255, green: 245/255, blue: 220/255)
+    let accentColor = Color.blue
     
     var body: some View {
         VStack {
             Text("Invoice")
-                .font(.largeTitle)
-                .foregroundColor(oliveGreen)
+                .font(.system(size: 24))
             
             Text("Date: \(Date(), formatter: dateFormatter)")
-                .font(.subheadline)
+                .font(.system(size: 14))
                 .foregroundColor(.gray)
             
             List {
                 ForEach(categories) { category in
                     let categoryItems = items.filter { $0.category == category.name }
                     if !categoryItems.isEmpty {
-                        Section(header: Text(category.name).font(.headline)) {
+                        Section(header: Text(category.name).font(.system(size: 16, weight: .medium))) {
                             ForEach(categoryItems) { item in
                                 HStack {
                                     Text(item.name ?? "Unnamed Item")
+                                        .font(.system(size: 14))
                                     Spacer()
                                     Text(String(format: "$%.2f", item.price))
+                                        .font(.system(size: 14))
                                 }
+                                .padding(.vertical, 4)
                             }
                             let subtotal = categoryItems.reduce(0) { $0 + $1.price }
                             let tax = subtotal * category.taxRate
                             let total = subtotal + tax
-                            VStack(alignment: .trailing) {
+                            VStack(alignment: .trailing, spacing: 2) {
                                 Text("Subtotal: $\(String(format: "%.2f", subtotal))")
+                                    .font(.system(size: 14))
                                 Text("Tax: $\(String(format: "%.2f", tax))")
+                                    .font(.system(size: 14))
                                 Text("Total: $\(String(format: "%.2f", total))")
-                                    .bold()
+                                    .font(.system(size: 14, weight: .bold))
                             }
+                            .padding(.vertical, 4)
                         }
                     }
                 }
@@ -58,26 +62,26 @@ struct InvoiceView: View {
                 }
                 let grandTotal = overallSubtotal + overallTax
                 
-                Section(header: Text("Overall Totals").font(.headline)) {
+                Section(header: Text("Overall Totals").font(.system(size: 16, weight: .medium))) {
                     Text("Subtotal: $\(String(format: "%.2f", overallSubtotal))")
+                        .font(.system(size: 14))
                     Text("Tax: $\(String(format: "%.2f", overallTax))")
+                        .font(.system(size: 14))
                     Text("Grand Total: $\(String(format: "%.2f", grandTotal))")
-                        .bold()
+                        .font(.system(size: 14, weight: .bold))
                 }
             }
             
             Button("Close") {
                 dismiss()
             }
-            .padding()
-            .background(oliveGreen)
+            .font(.system(size: 16))
+            .padding(8)
             .foregroundColor(.white)
-            .cornerRadius(10)
+            .background(accentColor)
+            .cornerRadius(4)
         }
         .padding()
-        .background(offWhite)
-        .cornerRadius(20)
-        .shadow(radius: 5)
     }
     
     private let dateFormatter: DateFormatter = {
