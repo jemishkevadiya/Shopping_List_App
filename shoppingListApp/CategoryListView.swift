@@ -20,6 +20,7 @@ struct CategoryListView: View {
     @State private var newCategoryName = ""
     @State private var newTaxRate = ""
     @State private var showInvoice = false
+    @State private var showDuplicateAlert = false
     
     let oliveGreen = Color(red: 85/255, green: 107/255, blue: 85/255)
     let offWhite = Color(red: 245/255, green: 245/255, blue: 220/255)
@@ -112,14 +113,21 @@ struct CategoryListView: View {
                         .keyboardType(.decimalPad)
                     Button("Add") {
                         if let taxRate = Double(newTaxRate), !newCategoryName.isEmpty {
-                            let newCategory = CategoryEntity(context: viewContext)
-                            newCategory.id = UUID()
-                            newCategory.name = newCategoryName
-                            newCategory.taxRate = taxRate / 100
-                            try? viewContext.save()
-                            newCategoryName = ""
-                            newTaxRate = ""
-                            showAddCategory = false
+                            let trimmedName = newCategoryName.trimmingCharacters(in: .whitespaces)
+                            let existingCategory = categoryEntities.first(where: { $0.name?.lowercased() == trimmedName.lowercased() })
+                            
+                            if existingCategory != nil {
+                                showDuplicateAlert = true
+                            } else {
+                                let newCategory = CategoryEntity(context: viewContext)
+                                newCategory.id = UUID()
+                                newCategory.name = trimmedName
+                                newCategory.taxRate = taxRate / 100
+                                try? viewContext.save()
+                                newCategoryName = ""
+                                newTaxRate = ""
+                                showAddCategory = false
+                            }
                         }
                     }
                     .padding()
@@ -128,6 +136,16 @@ struct CategoryListView: View {
                     .cornerRadius(10)
                 }
                 .padding()
+                .alert(isPresented: $showDuplicateAlert) {
+                    Alert(
+                        title: Text("Duplicate Category"),
+                        message: Text("A category with the name '\(newCategoryName)' already exists."),
+                        dismissButton: .default(Text("OK")) {
+                            newCategoryName = "" 
+                            newTaxRate = ""
+                        }
+                    )
+                }
             }
             .sheet(isPresented: $showInvoice) {
                 InvoiceView(items: Array(items), categories: categoryEntities.map { Category(id: $0.id ?? UUID(), name: $0.name ?? "", taxRate: $0.taxRate) })
@@ -168,10 +186,13 @@ struct CategoryListView: View {
         var subtotal: Double = 0
         var tax: Double = 0
         
-        let categoryDict = Dictionary(uniqueKeysWithValues: categoryEntities.map { ($0.name ?? "", $0.taxRate) })
+        let categoryList = categoryEntities.map { (name: $0.name ?? "", taxRate: $0.taxRate) }
         
         for item in items {
-            if let taxRate = categoryDict[item.category ?? ""] {
+            let matchingCategories = categoryList.filter { $0.name == (item.category ?? "") }
+            
+            if let firstMatchingCategory = matchingCategories.first {
+                let taxRate = firstMatchingCategory.taxRate
                 let itemSubtotal = item.price
                 let itemTax = itemSubtotal * taxRate
                 subtotal += itemSubtotal
